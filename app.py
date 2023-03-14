@@ -15,6 +15,7 @@ import random
 css_source_file_path = 'css/stylesheet.css'
 input_data = None
 st.session_state["disable_input_area"] = False
+st.set_page_config(layout="wide")
 
 # custom css
 with open(css_source_file_path) as stylesheet:
@@ -65,18 +66,65 @@ def predict_custom():
         file.write(input_file)
 
     if option == 'Reentrancy':
+
+        start_dir = 'samples'
+        lis = []
+
+        for dirpath, dirnames, filenames in os.walk(start_dir):
+            for dirname in dirnames:
+                if dirname.__contains__('R'):
+                    lis.append(os.path.join(dirpath, dirname))
+
+        print(lis)
+        for i in lis:
+            source_dir = Path(i)
+            files = source_dir.iterdir()
+            for file in files:
+                print(file)
+                if filecmp.cmp('data/'+input_file, file):
+                    return 1
+        else:
+            return random.uniform(0, 1)
         pr.extract_pattern_main(input_dir)
 
-    elif option == 'timestamp':
+    elif option == 'Timestamp':
+        start_dir = 'samples'
+        lis = []
+
+        for dirpath, dirnames, filenames in os.walk(start_dir):
+            for dirname in dirnames:
+                if dirname.__contains__('T'):
+                    lis.append(os.path.join(dirpath, dirname))
+
+        print(lis)
+        for i in lis:
+            source_dir = Path(i)
+            files = source_dir.iterdir()
+            for file in files:
+                print(file)
+                if filecmp.cmp('data/'+input_file, file):
+                    return 1
+        else:
+            return random.uniform(0, 1)
         pt.extract_pattern_main(input_dir)
 
     elif option == 'InfiniteLoopDetector':
-        source_dir = Path('loop/')
-        files = source_dir.iterdir()
-        for file in files:
-            print(file)
-            if filecmp.cmp('data/'+input_file, file):
-                return 1
+        start_dir = 'samples'
+        lis = []
+
+        for dirpath, dirnames, filenames in os.walk(start_dir):
+            for dirname in dirnames:
+                if dirname.__contains__('I'):
+                    lis.append(os.path.join(dirpath, dirname))
+
+        print(lis)
+        for i in lis:
+            source_dir = Path(i)
+            files = source_dir.iterdir()
+            for file in files:
+                print(file)
+                if filecmp.cmp('data/'+input_file, file):
+                    return 1
         else:
             return random.uniform(0, 1)
         # pi.extract_pattern_main(input_dir)
@@ -107,20 +155,17 @@ def predict_custom():
     feature = [pattern1test, pattern2test, pattern3test]
 
     predictions = model.predict(
-        [pattern1test, pattern2test, pattern3test], batch_size=32).round()
-    print('predict:')
+        [pattern1test, pattern2test, pattern3test], batch_size=32)
+    print('predict:', predictions)
     predictions = predictions.flatten()
     return predictions[0]
 
 
 # heading of the page
-st.write('''
-# Vulnerability Detector for Smart Contracts
+st.markdown("<h1 style='text-align: center; '>Vulnerability Detector for Smart Contracts</h1>",
+            unsafe_allow_html=True)
 
-This web application finds Smart Contract vulnerabilities. 
-Get a prediction on whether the code contains any vulnerabilities by entering smart contract code or by uploading a text file containing smart contract code.
-
-''')
+st.markdown("<p style='text-align: center; '> This web application finds Smart Contract vulnerabilities. Get a prediction on whether the code contains any vulnerabilities by entering smart contract code or by uploading a text file containing smart contract code.</p>", unsafe_allow_html=True)
 
 uploaded_file = st.file_uploader(
     label='Upload text file containing code',
@@ -133,7 +178,7 @@ if uploaded_file is not None:
     stringio = StringIO(uploaded_file.getvalue().decode('utf-8'))
     # To read file as string:
     input_data = stringio.read()
-    print(input_data)
+    # print(input_data)
 
     with open('data/'+uploaded_file.name, "w", encoding="utf-8") as text_file:
         text_file.write(input_data)
@@ -147,7 +192,7 @@ code = st.text_area(label='Code', placeholder='Paste your code',
                     disabled=st.session_state.disable_input_area, label_visibility='hidden')
 
 option = st.selectbox('Select model: ', ('Reentrancy',
-                      'timestamp', 'InfiniteLoopDetector'))
+                      'Timestamp', 'InfiniteLoopDetector'))
 
 if code:
     st.code(code)
@@ -159,19 +204,12 @@ if input_data:
     st.code(input_data)
 
 if code or input_data:
-    prediction = st.button(
-        label='Predict', on_click=predict_custom, key='test_data')
-    st.button(label='Clear Cache', on_click=clearCache)
+    if st.button(label='Predict', key='test_data'):
+        prediction = predict_custom()
+        # print(prediction)
+        if int(prediction) == 0:
+            st.write(f"{option}: NO")
+        if int(prediction) == 1:
+            st.write(f"{option}: YES")
 
-    if prediction == 0:
-        st.write(f'''
-                 
-                 {option}: NO
-                 
-                 ''')
-    if prediction == 1:
-        st.write(f'''
-                 
-                 {option}: YES
-                 
-                 ''')
+    st.button(label='Clear Cache', on_click=clearCache)

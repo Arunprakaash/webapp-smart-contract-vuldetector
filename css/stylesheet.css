@@ -10,3 +10,11 @@ body *,.css-183lzff
 .css-183lzff, .css-1yy6isu p {
    font-size: 16px;
 }
+
+.css-5uatcg {
+   background-color: #eb5e28;
+}
+
+.css-5uatcg:hover , .css-5uatcg:active , .css-5uatcg:focus, .css-5uatcg:focus:not(:active) {
+   color: #05123e;
+}

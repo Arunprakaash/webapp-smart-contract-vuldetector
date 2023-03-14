@@ -149,7 +149,7 @@ def extract_pattern_main(input_dir):
         pattern3.append(pattern_list[2])
 
         outputPathFC = outputfeatureFCDir + name + ".txt"
-        # extract_feature_with_fc(outputPathFC, pattern1, pattern2, pattern3)
+        extract_feature_with_fc(outputPathFC, pattern1, pattern2, pattern3)
 
         pattern1 = np.array(pattern1)
         pattern1 = np.array(np.pad(pattern1, (0, 246), 'constant'))
